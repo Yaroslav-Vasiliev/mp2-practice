@@ -223,12 +223,12 @@ public:
           throw out_of_range("Too large matrix");
       for (size_t i = 0; i < sz; i++)
       {
-          pMem[i] = TDynamicVector<T>(sz);
+          pMem[i] = TDynamicVector<T>(sz - i);
       }
   }
 
-  using TDynamicVector<TDynamicVector<T>>::operator[];
-  using TDynamicVector<TDynamicVector<T>>::at;
+  //using TDynamicVector<TDynamicVector<T>>::operator[];
+  //using TDynamicVector<TDynamicVector<T>>::at;
   using TDynamicVector<TDynamicVector<T>>::size;
   // сравнение
   bool operator==(const TDynamicMatrix& m) const noexcept
@@ -242,6 +242,19 @@ public:
           }
       }
       return true;
+  }
+
+  T& operator()(size_t row, size_t col)
+  {
+      if (row >= sz || col >= sz) throw out_of_range("Out of range");
+      if (col < row) throw out_of_range("Matrix is upper triangular");
+      return pMem[row][col - row];
+  }
+  const T operator()(size_t row, size_t col) const
+  {
+      if (row >= sz || col >= sz) throw out_of_range("Out of range");
+      if (col < row) return T();
+      return pMem[row][col - row];
   }
 
   //матрично-скалярные операции
@@ -263,7 +276,10 @@ public:
       TDynamicVector<T> res(sz);
       for (size_t i = 0; i < sz; i++)
       {
-          res[i] = pMem[i] * v;
+          for (size_t j = i; j < sz; j++)
+          {
+              res[i] += pMem[i][j-i] * v[j];
+          }
       }
       return res;
   }
@@ -298,11 +314,11 @@ public:
       TDynamicMatrix<T> res(sz);
       for (size_t i = 0; i < sz; i++)
       {
-          for (size_t j = 0; j < sz; j++)
+          for (size_t j = i; j < sz; j++)
           {
-              for (size_t k = 0; k < sz; k++)
+              for (size_t k = i; k <= j; k++)
               {
-                  res.pMem[i][j] += pMem[i][k] * m.pMem[k][j];
+                  res.pMem[i][j-i] += pMem[i][k-i] * m.pMem[k][j-k];
               }
           }
       }
@@ -321,7 +337,11 @@ public:
   friend ostream& operator<<(ostream& ostr, const TDynamicMatrix& v)
   {
       for (size_t i = 0; i < v.sz; i++)
+      {
+          for (size_t j = 0; j < i; j++)
+              ostr << T() << ' ';
           ostr << v.pMem[i] << '\n';
+      }
       return ostr;
   }
 };
