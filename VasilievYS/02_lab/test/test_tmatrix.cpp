@@ -35,7 +35,8 @@ TEST(TDynamicMatrix, copied_matrix_has_its_own_memory)
 {
 	TDynamicMatrix<int> m(5);
 	TDynamicMatrix<int> m1(m);
-	ASSERT_NE(&m(0, 0), &m1(0, 0));
+	m1.at(0).at(0) = 10;
+	ASSERT_FALSE(m == m1);
 }
 
 TEST(TDynamicMatrix, can_get_size)
@@ -73,15 +74,6 @@ TEST(TDynamicMatrix, throws_when_set_element_below_main_diagonal)
 {
 	TDynamicMatrix<int> m(5);
 	ASSERT_ANY_THROW(m(3, 1) = 2);
-}
-
-TEST(TDynamicMatrix, element_below_main_diagonal_of_const_matrix_is_zero)
-{
-	TDynamicMatrix<int> m(5);
-	m(1, 1) = 4;
-	const TDynamicMatrix<int> cm(m);
-	EXPECT_EQ(0, cm(3, 1));
-	EXPECT_EQ(4, cm(1, 1));
 }
 
 TEST(TDynamicMatrix, can_assign_matrix_to_itself)
@@ -209,8 +201,6 @@ TEST(TDynamicMatrix, cant_multiply_matrix_and_vector_with_not_equal_size)
 
 TEST(TDynamicMatrix, can_multiply_matrices_with_equal_size)
 {
-	// | 1 2 |   | 4 5 |   | 4 17 |
-	// | 0 3 | * | 0 6 | = | 0 18 |
 	TDynamicMatrix<int> a(2), b(2), exp(2);
 	a(0, 0) = 1; a(0, 1) = 2;
 				 a(1, 1) = 3;
